@@ -1,21 +1,30 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(descartes_tutorials)
 
+add_definitions(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
   descartes_core
   descartes_moveit
   descartes_trajectory
   descartes_planner
   trajectory_msgs
+  geometry_msgs
+  moveit_ros_planning_interface
+  move_interface
+  std_msgs
 )
 
-catkin_package()
+catkin_package(
+  INCLUDE_DIRS include
+)
 
 ###########
 ## Build ##
 ###########
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -28,6 +37,17 @@ include_directories(
 set_target_properties(${PROJECT_NAME}_tutorial1
   PROPERTIES OUTPUT_NAME tutorial1
   PREFIX "")
+
+ add_executable(${PROJECT_NAME}_get_pose src/get_pose.cpp)
+
+
+ target_link_libraries(${PROJECT_NAME}_get_pose
+   ${catkin_LIBRARIES}
+ )
+set_target_properties(${PROJECT_NAME}_get_pose
+  PROPERTIES OUTPUT_NAME get_pose
+  PREFIX "")
+
 
 
 #############
