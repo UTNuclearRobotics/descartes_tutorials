@@ -2,5 +2,7 @@
 <launch>
 
   <node name="tutorial1" pkg="descartes_tutorials" type="tutorial1" output="screen" />
+  <arg name="robot_name" default="sia5" />
+  <param name="robot_name" value="$(arg robot_name)"/>    
 
 </launch>
