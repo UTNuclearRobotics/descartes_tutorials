@@ -56,7 +56,7 @@ void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle
   visualization_msgs::MarkerArray markers_msg;
   float AXIS_LINE_WIDTH = 0.02;
   float AXIS_LINE_LENGTH = 0.02;
-  ros::Publisher marker_publisher_ = nh.advertise<visualization_msgs::MarkerArray>("chatter", 1000);
+  ros::Publisher marker_publisher_ = nh.advertise<visualization_msgs::MarkerArray>("chatterten", 1000);
   z_axes.type = y_axes.type = x_axes.type = visualization_msgs::Marker::LINE_LIST;
   z_axes.ns = y_axes.ns = x_axes.ns = "axes";
   z_axes.action = y_axes.action = x_axes.action = visualization_msgs::Marker::ADD;
@@ -205,18 +205,19 @@ int main(int argc, char** argv)
   group.move();
 
   TrajectoryVec points;
+/*
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.6, 1.25, 0.7 - 0.09 * i);
+    pose = Eigen::Translation3d(0.7, 0.5, 0.8 - 0.09 * i);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,0,0);
+    rotationRadians = -3.14195/2;
+    rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -228,15 +229,15 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.6, 1.25 - 0.09 * i, 0.52);
+    pose = Eigen::Translation3d(0.7, 0.5 - 0.09 * i, 0.62);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,0,0);
+    rotationRadians = -3.14195/2;
+    rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -248,15 +249,15 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.6, 1.25-0.18, 0.52 + 0.09 * i);
+    pose = Eigen::Translation3d(0.7, 0.5-0.18, 0.62 + 0.09 * i);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,0,0);
+    rotationRadians = -3.14195/2;
+    rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -264,19 +265,19 @@ int main(int argc, char** argv)
     points.push_back(pt);
     poses.push_back(pose);	
   }
-
+*/
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.6, 1.25-0.18 + 0.09 * i, 0.7);
+    pose = Eigen::Translation3d(0.55, 0.64+0.18 + 0.09 * i, 0.5);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,0,0);
+    rotationRadians = -3.14195/2;
+    rotationVector = Eigen::Vector3d(0,1,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -300,9 +301,7 @@ int main(int argc, char** argv)
   
 
   // 2. Create a robot model and initialize it
-  descartes_core::RobotModelPtr model(new descartes_moveit::MoveitStateAdapter);
-
-  model->setCheckCollisions(true);
+  descartes_core::RobotModelPtr model (new descartes_moveit::MoveitStateAdapter);
 
   // Name of description on parameter server. Typically just "robot_description".
   const std::string robot_description = "robot_description";

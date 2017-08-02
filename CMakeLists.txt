@@ -38,6 +38,16 @@ set_target_properties(${PROJECT_NAME}_tutorial1
   PROPERTIES OUTPUT_NAME tutorial1
   PREFIX "")
 
+ add_executable(${PROJECT_NAME}_tutorial2 src/tutorial2.cpp)
+
+ target_link_libraries(${PROJECT_NAME}_tutorial2
+   ${catkin_LIBRARIES}
+ )
+
+set_target_properties(${PROJECT_NAME}_tutorial2
+  PROPERTIES OUTPUT_NAME tutorial2
+  PREFIX "")
+
  add_executable(${PROJECT_NAME}_tutorial_austin src/tutorial_austin.cpp)
 
  target_link_libraries(${PROJECT_NAME}_tutorial_austin
@@ -65,6 +75,11 @@ set_target_properties(${PROJECT_NAME}_get_pose
 #############
 
 install(TARGETS ${PROJECT_NAME}_tutorial1
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ${PROJECT_NAME}_tutorial2
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
