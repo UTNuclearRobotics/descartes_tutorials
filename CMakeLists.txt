@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(descartes_tutorials)
+project(vf_descartes)
 
 add_compile_options(-std=c++11)
 
@@ -28,44 +28,14 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
- add_executable(${PROJECT_NAME}_tutorial1 src/tutorial1.cpp)
+ add_executable(${PROJECT_NAME}_plan_d_path src/plan_d_path.cpp)
 
- target_link_libraries(${PROJECT_NAME}_tutorial1
+ target_link_libraries(${PROJECT_NAME}_plan_d_path
    ${catkin_LIBRARIES}
  )
 
-set_target_properties(${PROJECT_NAME}_tutorial1
-  PROPERTIES OUTPUT_NAME tutorial1
-  PREFIX "")
-
- add_executable(${PROJECT_NAME}_tutorial2 src/tutorial2.cpp)
-
- target_link_libraries(${PROJECT_NAME}_tutorial2
-   ${catkin_LIBRARIES}
- )
-
-set_target_properties(${PROJECT_NAME}_tutorial2
-  PROPERTIES OUTPUT_NAME tutorial2
-  PREFIX "")
-
- add_executable(${PROJECT_NAME}_tutorial_austin src/tutorial_austin.cpp)
-
- target_link_libraries(${PROJECT_NAME}_tutorial_austin
-   ${catkin_LIBRARIES}
- )
-
-set_target_properties(${PROJECT_NAME}_tutorial_austin
-  PROPERTIES OUTPUT_NAME tutorial_austin
-  PREFIX "")
-
- add_executable(${PROJECT_NAME}_get_pose src/get_pose.cpp)
-
-
- target_link_libraries(${PROJECT_NAME}_get_pose
-   ${catkin_LIBRARIES}
- )
-set_target_properties(${PROJECT_NAME}_get_pose
-  PROPERTIES OUTPUT_NAME get_pose
+set_target_properties(${PROJECT_NAME}_plan_d_path
+  PROPERTIES OUTPUT_NAME plan_d_path
   PREFIX "")
 
 
@@ -74,12 +44,7 @@ set_target_properties(${PROJECT_NAME}_get_pose
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME}_tutorial1
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS ${PROJECT_NAME}_tutorial2
+install(TARGETS ${PROJECT_NAME}_plan_d_path
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

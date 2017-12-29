@@ -42,14 +42,14 @@ descartes_core::TrajectoryPtPtr makeTolerancedCartesianPoint(const Eigen::Affine
  */
 trajectory_msgs::JointTrajectory
 toROSJointTrajectory(const TrajectoryVec& trajectory, const descartes_core::RobotModel& model,
-                     const std::vector<std::string>& joint_names, double time_delay);
+                     const std::vector<std::string>& joint_names, double time_delay, const std::string robot_name);
 
 /**
  * Sends a ROS trajectory to the robot controller
  */
-bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory);
+bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory, const std::string robot_name);
 
-void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle nh)
+void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle nh, const std::string robot_name)
 {
   // creating rviz markers
   visualization_msgs::Marker z_axes, y_axes, x_axes, line;
@@ -61,7 +61,8 @@ void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle
   z_axes.ns = y_axes.ns = x_axes.ns = "axes";
   z_axes.action = y_axes.action = x_axes.action = visualization_msgs::Marker::ADD;
   z_axes.lifetime = y_axes.lifetime = x_axes.lifetime = ros::Duration(0);
-  z_axes.header.frame_id = y_axes.header.frame_id = x_axes.header.frame_id = "table_link";
+  z_axes.header.frame_id = y_axes.header.frame_id = x_axes.header.frame_id = "/table_link";
+  // z_axes.header.frame_id = y_axes.header.frame_id = x_axes.header.frame_id = "/"+robot_name+"_base_link";
   z_axes.scale.x = y_axes.scale.x = x_axes.scale.x = AXIS_LINE_WIDTH;
 
   // z properties
@@ -90,7 +91,8 @@ void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle
   line.ns = "line";
   line.action = visualization_msgs::Marker::ADD;
   line.lifetime = ros::Duration(0);
-  line.header.frame_id = "table_link";
+  line.header.frame_id = "/table_link";
+  // line.header.frame_id = "/"+robot_name+"_base_link";
   line.scale.x = AXIS_LINE_WIDTH;
   line.id = 0;
   line.color.r = 1;
@@ -164,13 +166,19 @@ std::vector<double> getCurrentJointState(const std::string& topic)
 int main(int argc, char** argv)
 {
   // Initialize ROS
-  ros::init(argc, argv, "descartes_tutorial");
+  ros::init(argc, argv, "plan_d_path");
   ros::NodeHandle nh;
-
+  std::string robot_name;
+  
+  if(!nh.getParam("robot_name", robot_name))
+  {
+    ROS_ERROR("Cannot find params.");
+    return 0;
+  }
   // Required for communication with moveit components
   ros::AsyncSpinner spinner (2);
   spinner.start();
-  moveit::planning_interface::MoveGroupInterface group("sia5");
+  moveit::planning_interface::MoveGroupInterface group(robot_name);
   EigenSTL::vector_Affine3d poses;
   // 1. Define sequence of points  
   /* geometry_msgs::Pose target_pose1;
@@ -200,15 +208,15 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50, 0.50 - 0.09 * i);
+    pose = Eigen::Translation3d(0.6, 1.25, 0.7 - 0.09 * i);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
     rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
+    rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -220,15 +228,15 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50 - 0.09 * i, 0.32);
+    pose = Eigen::Translation3d(0.6, 1.25 - 0.09 * i, 0.52);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
     rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
+    rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -240,15 +248,15 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50-0.18, 0.32 + 0.09 * i);
+    pose = Eigen::Translation3d(0.6, 1.25-0.18, 0.52 + 0.09 * i);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
     rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
+    rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -256,18 +264,19 @@ int main(int argc, char** argv)
     points.push_back(pt);
     poses.push_back(pose);	
   }
+
   for (unsigned int i = 0; i < 3; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50-0.18 + 0.09 * i, 0.5);
+    pose = Eigen::Translation3d(0.6, 1.25-0.18 + 0.09 * i, 0.7);
     Eigen::Quaterniond quat;
     double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
+    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
     pose.linear() *= rotMat;
     rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
+    rotationVector = Eigen::Vector3d(0,0,0);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
@@ -275,9 +284,9 @@ int main(int argc, char** argv)
     points.push_back(pt);
     poses.push_back(pose);	
   }
-  ros::Duration(0.5).sleep();
-  publishPosesMarkers(poses, nh);
-  ros::Duration(0.5).sleep();
+  ros::Duration(1.0).sleep();
+  publishPosesMarkers(poses, nh, robot_name);
+  ros::Duration(1.0).sleep();
 
 
   /* for (unsigned int i = 0; i < 5; ++i)
@@ -291,27 +300,32 @@ int main(int argc, char** argv)
   
 
   // 2. Create a robot model and initialize it
-  descartes_core::RobotModelPtr model (new descartes_moveit::MoveitStateAdapter);
+  descartes_core::RobotModelPtr model(new descartes_moveit::MoveitStateAdapter);
+
+  model->setCheckCollisions(true);
 
   // Name of description on parameter server. Typically just "robot_description".
   const std::string robot_description = "robot_description";
 
   // name of the kinematic group you defined when running MoveitSetupAssistant
-  const std::string group_name = "sia5";
+  const std::string group_name = robot_name;
 
   // Name of frame in which you are expressing poses. Typically "world_frame" or "base_link".
-  const std::string world_frame = "base_link";
+  const std::string world_frame = "/base_link";
+  // const std::string world_frame = "/"+robot_name+"_base_link";
+
 
   // tool center point frame (name of link associated with tool)
   const std::string tcp_frame = "tool0";
+  // const std::string tcp_frame = robot_name+"_eef_frame_code";
 
   if (!model->initialize(robot_description, group_name, world_frame, tcp_frame))
   {
     ROS_INFO("Could not initialize robot model");
     return -1;
   }
-    std::vector<double> start_joints = getCurrentJointState("joint_states");
-    start_joints.resize(7);
+//    std::vector<double> start_joints = getCurrentJointState("joint_states");
+//   start_joints.resize(7);
 /*
     descartes_core::TrajectoryPtPtr pt (new descartes_trajectory::JointTrajectoryPt(start_joints));
     points.front() = pt;
@@ -337,18 +351,32 @@ int main(int argc, char** argv)
   // 5. Translate the result into a type that ROS understands
   // Get Joint Names
   std::vector<std::string> names;
-  nh.getParam("controller_joint_names", names);
+  nh.getParam(robot_name+"/controller_joint_names", names);
   // Generate a ROS joint trajectory with the result path, robot model, given joint names,
   // a certain time delta between each trajectory point
-  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 1.0);
+  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 1.0, robot_name);
   std::vector<double> start_pose = joint_solution.points[0].positions;
-  MoveInterface mi = MoveInterface();
-  mi.initialize("sia5");
-  mi.moveJoints(start_pose, 1.0);
-  mi.waitForStatus();
 
+  ros::Duration(2.0).sleep();
+  MoveInterface mi = MoveInterface();
+  ros::Duration(3.0).sleep();
+  mi.initialize(group_name);
+  mi.moveJoints(start_pose, 1.0);
+  ros::Duration(3.0).sleep();
+
+  ros::Duration(3.0).sleep();
+
+  std::vector<double> joints = getCurrentJointState(robot_name+"/joint_states");
+
+
+  joint_solution.points[0].positions = joints;
+  ros::Duration(3.0).sleep();
+
+
+  mi.waitForStatus();
+  ros::Duration(3.0).sleep();
   // 6. Send the ROS trajectory to the robot for execution
-  if (!executeTrajectory(joint_solution))
+  if (!executeTrajectory(joint_solution, robot_name))
   {
     ROS_ERROR("Could not execute trajectory!");
     return -4;
@@ -371,19 +399,21 @@ descartes_core::TrajectoryPtPtr makeTolerancedCartesianPoint(const Eigen::Affine
 {
   using namespace descartes_core;
   using namespace descartes_trajectory;
-  return TrajectoryPtPtr( new AxialSymmetricPt(pose, M_PI/2.0-0.0001, AxialSymmetricPt::Z_AXIS) );
+  return TrajectoryPtPtr( new AxialSymmetricPt(pose, M_PI/2.0-0.0001, AxialSymmetricPt::X_AXIS) );
 }
 
 trajectory_msgs::JointTrajectory
 toROSJointTrajectory(const TrajectoryVec& trajectory,
                      const descartes_core::RobotModel& model,
                      const std::vector<std::string>& joint_names,
-                     double time_delay)
+                     double time_delay,
+                     const std::string robot_name)
 {
   // Fill out information about our trajectory
   trajectory_msgs::JointTrajectory result;
   result.header.stamp = ros::Time::now();
-  result.header.frame_id = "base_link";
+  result.header.frame_id = "/table_link";
+  // result.header.frame_id = "/"+robot_name+"_base_link";
   result.joint_names = joint_names;
 
   // For keeping track of time-so-far in the trajectory
@@ -414,10 +444,13 @@ toROSJointTrajectory(const TrajectoryVec& trajectory,
   return result;
 }
 
-bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory)
+bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory, const std::string robot_name)
 {
   // Create a Follow Joint Trajectory Action Client
-  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac("joint_trajectory_action", true);
+  // actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac("joint_trajectory_action", true);
+
+  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac(robot_name+"/joint_trajectory_action", true);
+
   if (!ac.waitForServer(ros::Duration(2.0)))
   {
     ROS_ERROR("Could not connect to action server");

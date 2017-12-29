@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-  <node name="get_pose" pkg="descartes_tutorials" type="get_pose" output="screen" />
-
-</launch>
