@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Load config parameters -->
+  <rosparam command="load" file="$(find descartes_tutorials)/config/robot_config.yaml" />
+  <node name="tutorial_austin" pkg="descartes_tutorials" type="tutorial_austin" output="screen" />
+
+</launch>

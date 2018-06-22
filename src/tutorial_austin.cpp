@@ -2,6 +2,7 @@
 #include <ros/ros.h>
 // ROS Trajectory Action server definition
 #include <control_msgs/FollowJointTrajectoryAction.h>
+
 // Means by which we communicate with above action-server
 #include <actionlib/client/simple_action_client.h>
 
@@ -27,6 +28,7 @@
 
 typedef std::vector<descartes_core::TrajectoryPtPtr> TrajectoryVec;
 typedef TrajectoryVec::const_iterator TrajectoryIter;
+actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> *ac;
 
 /**
  * Generates an completely defined (zero-tolerance) cartesian point from a pose
@@ -42,14 +44,14 @@ descartes_core::TrajectoryPtPtr makeTolerancedCartesianPoint(const Eigen::Affine
  */
 trajectory_msgs::JointTrajectory
 toROSJointTrajectory(const TrajectoryVec& trajectory, const descartes_core::RobotModel& model,
-                     const std::vector<std::string>& joint_names, double time_delay);
+                     const std::vector<std::string>& joint_names, double time_delay, std::string fixedFrame);
 
 /**
  * Sends a ROS trajectory to the robot controller
  */
 bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory);
 
-void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle nh)
+void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle nh, std::string fixedFrame)
 {
   // creating rviz markers
   visualization_msgs::Marker z_axes, y_axes, x_axes, line;
@@ -61,7 +63,7 @@ void publishPosesMarkers(const EigenSTL::vector_Affine3d& poses, ros::NodeHandle
   z_axes.ns = y_axes.ns = x_axes.ns = "axes";
   z_axes.action = y_axes.action = x_axes.action = visualization_msgs::Marker::ADD;
   z_axes.lifetime = y_axes.lifetime = x_axes.lifetime = ros::Duration(0);
-  z_axes.header.frame_id = y_axes.header.frame_id = x_axes.header.frame_id = "table_link";
+  z_axes.header.frame_id = y_axes.header.frame_id = x_axes.header.frame_id = fixedFrame;
   z_axes.scale.x = y_axes.scale.x = x_axes.scale.x = AXIS_LINE_WIDTH;
 
   // z properties
@@ -170,7 +172,29 @@ int main(int argc, char** argv)
   // Required for communication with moveit components
   ros::AsyncSpinner spinner (2);
   spinner.start();
-  moveit::planning_interface::MoveGroupInterface group("sia5");
+
+  float xPos;
+  float yPos;
+  float zPos;
+
+  std::string moveGroup, fixedFrame, endEffector, jointTrajectoryCommand;
+  if(nh.getParam("/config_data/move_group", moveGroup) &&
+     nh.getParam("/config_data/fixed_frame", fixedFrame) &&
+     nh.getParam("/config_data/end_effector", endEffector) &&
+     nh.getParam("/config_data/joint_trajectory_command", jointTrajectoryCommand) &&
+     nh.getParam("/config_data/x_pos", xPos) &&
+     nh.getParam("/config_data/y_pos", yPos) &&
+     nh.getParam("/config_data/z_pos", zPos))
+  {
+    
+  }
+  else
+  {
+    ROS_ERROR("Unable to get config data from param server. Ending demo.");
+    return false;
+  }
+  moveit::planning_interface::MoveGroupInterface group(moveGroup);
+  ac = new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ("/" + jointTrajectoryCommand, true);
   EigenSTL::vector_Affine3d poses;
   // 1. Define sequence of points  
   /* geometry_msgs::Pose target_pose1;
@@ -187,8 +211,7 @@ int main(int argc, char** argv)
   quat1 = Eigen::AngleAxisd(rotationRadians, rotationVector);
   quat = quat*quat1;
   tf::quaternionEigenToMsg(quat, target_pose1.orientation);
-  group.setPoseTarget(target_pose1);
-  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  group.setPoseTarget(target_pose  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   bool success = group.plan(my_plan);
   ROS_INFO("Visualizing plan 1 (pose goal) %s",success?"":"FAILED");
   */
@@ -196,53 +219,48 @@ int main(int argc, char** argv)
   ros::Duration(1.0).sleep();
   group.move();
 
-  TrajectoryVec points;
-  for (unsigned int i = 0; i < 3; ++i)
-  {
-    Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50, 0.50 - 0.09 * i);
-    Eigen::Quaterniond quat;
-    double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    Eigen::Matrix3d rotMat; rotMat = quat;
-    pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    rotMat = quat;
-    pose.linear() *= rotMat;
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-    poses.push_back(pose);	
-  }
- 
-  for (unsigned int i = 0; i < 3; ++i)
-  {
-    Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50 - 0.09 * i, 0.32);
-    Eigen::Quaterniond quat;
-    double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    Eigen::Matrix3d rotMat; rotMat = quat;
-    pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    rotMat = quat;
-    pose.linear() *= rotMat;
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-    poses.push_back(pose);	
-  }
 
-  for (unsigned int i = 0; i < 3; ++i)
+  TrajectoryVec points;
+
+  double R = 0.04;
+  double angle = 2*3.14195/21;
+  double offset = (R-0.005)/3;
+ 
+ for (unsigned int i = 0; i < 1; ++i)
   {
     Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50-0.18, 0.32 + 0.09 * i);
+    double o = offset*i;
+    double r = sqrt(R*R-o*o);
+    for (unsigned int j = 0; j < 20; j++) // j = 21
+    {
+        pose = Eigen::Translation3d((xPos+r*cos(angle*j)), (yPos +(r)*sin(angle*j)), zPos +(o));
+
+        Eigen::Quaterniond quat;
+        double rotationRadians = 3.14195;
+        Eigen::Vector3d rotationVector = Eigen::Vector3d(0,1,0);
+        quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
+        Eigen::Matrix3d rotMat; rotMat = quat;
+        pose.linear() *= rotMat;
+/*
+        rotationRadians = 3.14195/2;
+        rotationVector = Eigen::Vector3d(0,1,0);
+        quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
+        rotMat = quat;
+        pose.linear() *= rotMat;
+        rotationRadians = 3.14195/2;
+        rotationVector = Eigen::Vector3d(0,1,0);
+        quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
+        rotMat = quat;
+        pose.linear() *= rotMat;
+*/
+        descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
+        points.push_back(pt);
+        poses.push_back(pose);
+        ros::Duration(0.1).sleep();
+    }
+    /*
     Eigen::Quaterniond quat;
-    double rotationRadians = -3.14195/2;
+    double rotationRadians = 3.14195/2;
     Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     Eigen::Matrix3d rotMat; rotMat = quat;
@@ -252,31 +270,16 @@ int main(int argc, char** argv)
     quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
     rotMat = quat;
     pose.linear() *= rotMat;
+    */
+    /*
     descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
     points.push_back(pt);
-    poses.push_back(pose);	
-  }
-  for (unsigned int i = 0; i < 3; ++i)
-  {
-    Eigen::Affine3d pose;
-    pose = Eigen::Translation3d(0.50, 0.50-0.18 + 0.09 * i, 0.5);
-    Eigen::Quaterniond quat;
-    double rotationRadians = -3.14195/2;
-    Eigen::Vector3d rotationVector = Eigen::Vector3d(0,0,1);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    Eigen::Matrix3d rotMat; rotMat = quat;
-    pose.linear() *= rotMat;
-    rotationRadians = 3.14195/2;
-    rotationVector = Eigen::Vector3d(0,1,0);
-    quat = Eigen::AngleAxisd(rotationRadians, rotationVector);
-    rotMat = quat;
-    pose.linear() *= rotMat;
-    descartes_core::TrajectoryPtPtr pt = makeTolerancedCartesianPoint(pose);
-    points.push_back(pt);
-    poses.push_back(pose);	
+    poses.push_back(pose);
+    */
+  ros::Duration(0.1).sleep();
   }
   ros::Duration(0.5).sleep();
-  publishPosesMarkers(poses, nh);
+  publishPosesMarkers(poses, nh, fixedFrame);
   ros::Duration(0.5).sleep();
 
 
@@ -297,21 +300,20 @@ int main(int argc, char** argv)
   const std::string robot_description = "robot_description";
 
   // name of the kinematic group you defined when running MoveitSetupAssistant
-  const std::string group_name = "sia5";
+  const std::string group_name = moveGroup;
 
   // Name of frame in which you are expressing poses. Typically "world_frame" or "base_link".
-  const std::string world_frame = "base_link";
+  const std::string world_frame = fixedFrame;
 
   // tool center point frame (name of link associated with tool)
-  const std::string tcp_frame = "tool0";
+  const std::string tcp_frame = endEffector;
 
   if (!model->initialize(robot_description, group_name, world_frame, tcp_frame))
   {
     ROS_INFO("Could not initialize robot model");
     return -1;
   }
-    std::vector<double> start_joints = getCurrentJointState("joint_states");
-    start_joints.resize(7);
+
 /*
     descartes_core::TrajectoryPtPtr pt (new descartes_trajectory::JointTrajectoryPt(start_joints));
     points.front() = pt;
@@ -337,15 +339,19 @@ int main(int argc, char** argv)
   // 5. Translate the result into a type that ROS understands
   // Get Joint Names
   std::vector<std::string> names;
-  nh.getParam("controller_joint_names", names);
+  nh.getParam("/config_data/joint_names", names);
   // Generate a ROS joint trajectory with the result path, robot model, given joint names,
   // a certain time delta between each trajectory point
-  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 1.0);
+  trajectory_msgs::JointTrajectory joint_solution = toROSJointTrajectory(result, *model, names, 1.0, fixedFrame);
   std::vector<double> start_pose = joint_solution.points[0].positions;
   MoveInterface mi = MoveInterface();
-  mi.initialize("sia5");
+  mi.initialize(moveGroup);
   mi.moveJoints(start_pose, 1.0);
   mi.waitForStatus();
+
+  std::vector<double> start_joints = getCurrentJointState("joint_states");
+  start_joints.resize(6);
+  joint_solution.points[0].positions = start_joints;
 
   // 6. Send the ROS trajectory to the robot for execution
   if (!executeTrajectory(joint_solution))
@@ -378,12 +384,13 @@ trajectory_msgs::JointTrajectory
 toROSJointTrajectory(const TrajectoryVec& trajectory,
                      const descartes_core::RobotModel& model,
                      const std::vector<std::string>& joint_names,
-                     double time_delay)
+                     double time_delay,
+                     std::string fixedFrame)
 {
   // Fill out information about our trajectory
   trajectory_msgs::JointTrajectory result;
   result.header.stamp = ros::Time::now();
-  result.header.frame_id = "base_link";
+  result.header.frame_id = fixedFrame;
   result.joint_names = joint_names;
 
   // For keeping track of time-so-far in the trajectory
@@ -417,8 +424,7 @@ toROSJointTrajectory(const TrajectoryVec& trajectory,
 bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory)
 {
   // Create a Follow Joint Trajectory Action Client
-  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac("joint_trajectory_action", true);
-  if (!ac.waitForServer(ros::Duration(2.0)))
+  if (!ac->waitForServer(ros::Duration(6.0)))
   {
     ROS_ERROR("Could not connect to action server");
     return false;
@@ -428,9 +434,9 @@ bool executeTrajectory(const trajectory_msgs::JointTrajectory& trajectory)
   goal.trajectory = trajectory;
   goal.goal_time_tolerance = ros::Duration(1.0);
   
-  ac.sendGoal(goal);
+  ac->sendGoal(goal);
 
-  if (ac.waitForResult(goal.trajectory.points[goal.trajectory.points.size()-1].time_from_start + ros::Duration(5)))
+  if (ac->waitForResult(goal.trajectory.points[goal.trajectory.points.size()-1].time_from_start + ros::Duration(5)))
   {
     ROS_INFO("Action server reported successful execution");
     return true;

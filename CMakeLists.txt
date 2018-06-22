@@ -48,16 +48,6 @@ set_target_properties(${PROJECT_NAME}_tutorial2
   PROPERTIES OUTPUT_NAME tutorial2
   PREFIX "")
 
- add_executable(${PROJECT_NAME}_tutorial_austin src/tutorial_austin.cpp)
-
- target_link_libraries(${PROJECT_NAME}_tutorial_austin
-   ${catkin_LIBRARIES}
- )
-
-set_target_properties(${PROJECT_NAME}_tutorial_austin
-  PROPERTIES OUTPUT_NAME tutorial_austin
-  PREFIX "")
-
  add_executable(${PROJECT_NAME}_get_pose src/get_pose.cpp)
 
 
@@ -68,6 +58,26 @@ set_target_properties(${PROJECT_NAME}_get_pose
   PROPERTIES OUTPUT_NAME get_pose
   PREFIX "")
 
+
+ add_executable(${PROJECT_NAME}_shapely src/shapely.cpp)
+
+
+ target_link_libraries(${PROJECT_NAME}_shapely
+   ${catkin_LIBRARIES}
+ )
+set_target_properties(${PROJECT_NAME}_shapely
+  PROPERTIES OUTPUT_NAME shapely
+  PREFIX "")
+
+ add_executable(${PROJECT_NAME}_tutorial_austin src/tutorial_austin.cpp)
+
+
+ target_link_libraries(${PROJECT_NAME}_tutorial_austin
+   ${catkin_LIBRARIES}
+ )
+set_target_properties(${PROJECT_NAME}_tutorial_austin
+  PROPERTIES OUTPUT_NAME tutorial_austin
+  PREFIX "")
 
 
 #############

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Load config parameters -->
+  <rosparam command="load" file="$(find descartes_tutorials)/config/robot_config.yaml" />
+  <node name="shapely" pkg="descartes_tutorials" type="shapely" output="screen" />
+
+</launch>
