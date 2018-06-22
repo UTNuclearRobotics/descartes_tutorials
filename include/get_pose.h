@@ -6,7 +6,7 @@
 #include <tf/transform_broadcaster.h>
 #include "geometry_msgs/PoseStamped.h"
 #include <iostream>
-#include "move_interface.h"
+#include "move_interface/move_interface.h"
 
 
 class dataCollection {
