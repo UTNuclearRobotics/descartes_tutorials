@@ -313,7 +313,8 @@ int main(int argc, char** argv)
     ROS_INFO("Could not initialize robot model");
     return -1;
   }
-
+ 
+  model->setCheckCollisions(true);
 /*
     descartes_core::TrajectoryPtPtr pt (new descartes_trajectory::JointTrajectoryPt(start_joints));
     points.front() = pt;
